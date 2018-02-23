@@ -1,2 +1,2 @@
-const login = require('./src/login')
-login.login()
+const app = require('./src/login')
+app.login()
