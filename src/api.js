@@ -7,7 +7,9 @@ const api = {
   get_cookie: `${origin}/cgi-bin/mmwebwx-bin/webwxnewloginpage`,
   init: `${origin}/cgi-bin/mmwebwx-bin/webwxinit`,
   get_contact: `${origin}/cgi-bin/mmwebwx-bin/webwxgetcontact`,
-  get_qun: `${origin}/cgi-bin/mmwebwx-bin/webwxbatchgetcontact`,
-  send_text: `${origin}/cgi-bin/mmwebwx-bin/webwxsendmsg`
+  webwxbatchgetcontact: `${origin}/cgi-bin/mmwebwx-bin/webwxbatchgetcontact`,
+  send_text: `${origin}/cgi-bin/mmwebwx-bin/webwxsendmsg`,
+  synccheck: `${origin}/cgi-bin/mmwebwx-bin/synccheck`,
+  sync: `${origin}/cgi-bin/mmwebwx-bin/webwxsync`
 }
 module.exports = api

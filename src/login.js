@@ -108,9 +108,6 @@ function getContact () {
   $http.post(api.get_contact, params).then(
     (res) => {
       memberList = res.data.MemberList
-      fathers.forEach((i) => {
-        sendText('爸爸您好', findName(i))
-      })
       console.log('获取联系人列表成功')
     }
   )
@@ -142,5 +139,4 @@ function findName (name) {
     }
   }
 }
-let fathers = ['evan', 'wood', 'meteor', '正太']
 exports.login = login
