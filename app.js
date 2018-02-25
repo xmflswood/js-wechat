@@ -8,12 +8,12 @@ async function init () {
   console.log('获取cookies成功')
   await bot._wxinit()
   console.log('初始化成功')
+  await bot._getContact()
+  await bot.notifyMobile()
   return true
 }
 async function main () {
   await init()
   bot.syncPolling()
-  // await bot._getContact()
-  // bot.lastSyncTime = Date.now()
 }
 main()

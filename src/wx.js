@@ -150,15 +150,29 @@ class Wx {
       }
     )
   }
+  notifyMobile () {
+    let params = {
+      'BaseRequest': this.BaseRequest,
+      'Code': 3,
+      'FromUserName': this.user['UserName'],
+      'ToUserName': this.user['UserName'],
+      'ClientMsgId': getClientMsgId()
+    }
+    return this.$http.post(`${api.notify}?pass_ticket=${this.prop.pass_ticket}`, params).then(
+      (res) => {
+        console.log(res.data)
+      }
+    )
+  }
   batchGetContact (contacts) {
     let params = {
       'BaseRequest': this.BaseRequest,
       'Count': contacts.length,
       'List': contacts
     }
-    this.$http.post(`${api.webwxbatchgetcontact}?pass_ticket=${this.prop.pass_ticket}&type=ex&r=${+new Date()}&lang=zh_CN`, params).then(
+    return this.$http.post(`${api.webwxbatchgetcontact}?pass_ticket=${this.prop.pass_ticket}&type=ex&r=${+new Date()}&lang=zh_CN`, params).then(
       (res) => {
-        console.log(res.data)
+        return res.data.ContactList
       }
     )
   }
@@ -166,19 +180,24 @@ class Wx {
     let code = +await this.syncCheck()
     if (code !== 0) {
       let newData = await this.sync()
+      newData.AddMsgList.forEach(msg => {
+        msg = this.Message.extend(msg)
+        if (msg.MsgType === 51) {
+          let userList = msg.StatusNotifyUserName.split(',').filter(UserName => !this.contacts[UserName])
+            .map(UserName => {
+              return {
+                UserName: UserName
+              }
+            })
+          console.log('!!!!!!!!!!!')
+          console.log(userList.length)
+          console.log('!!!!!!!!!!!')
+        }
+      })
       this.handleSync(newData)
     }
-    // this.syncCheck().then(selector => {
-    //   if (+selector !== this.CONF.SYNCCHECK_SELECTOR_NORMAL) {
-    //     return this.sync().then(data => {
-    //       this.syncErrorCount = 0
-    //       this.handleSync(data)
-    //     })
-    //   }
-    // }).then(() => {
-    //   this.lastSyncTime = Date.now()
-    //   this.syncPolling(id)
-    // })
+    this.lastSyncTime = Date.now()
+    this.syncPolling(id)
   }
   syncCheck () {
     let params = {
@@ -227,32 +246,26 @@ class Wx {
     }
   }
   handleMsg (data) {
-    data.forEach(msg => {
-      Promise.resolve().then(() => {
-        if (!this.contacts[msg.FromUserName] ||
-          (msg.FromUserName.startsWith('@@') && this.contacts[msg.FromUserName].MemberCount === 0)) {
-          return this.batchGetContact([{
-            UserName: msg.FromUserName
-          }]).then(contacts => {
-            this.updateContacts(contacts)
+    data.forEach(async msg => {
+      if (this.contacts[msg.FromUserName] ||
+      msg.FromUserName.startsWith('@@')) {
+        let contacts = await this.batchGetContact([{UserName: msg.FromUserName}])
+        this.updateContacts(contacts)
+      }
+      msg = this.Message.extend(msg)
+      if (msg.MsgType === 51) {
+        let userList = msg.StatusNotifyUserName.split(',').filter(UserName => !this.contacts[UserName])
+          .map(UserName => {
+            return {
+              UserName: UserName
+            }
           })
-        }
-      }).then(() => {
-        msg = this.Message.extend(msg)
-        if (msg.MsgType === 51) {
-          let userList = msg.StatusNotifyUserName.split(',').filter(UserName => !this.contacts[UserName])
-            .map(UserName => {
-              return {
-                UserName: UserName
-              }
-            })
-          Promise.all(_.chunk(userList, 50).map(list => {
-            return this.batchGetContact(list).then(res => {
-              this.updateContacts(res)
-            })
-          }))
-        }
-      })
+        let all = _.chunk(userList, 50)
+        all.forEach(async (i) => {
+          let contacts = await this.batchGetContact(i)
+          this.updateContacts(contacts)
+        })
+      }
     })
   }
   updateContacts (contacts) {
@@ -261,18 +274,10 @@ class Wx {
     }
     contacts.forEach(contact => {
       if (this.contacts[contact.UserName]) {
-        let oldContact = this.contacts[contact.UserName]
-        // 清除无效的字段
-        for (let i in contact) {
-          contact[i] || delete contact[i]
-        }
-        Object.assign(oldContact, contact)
-        this.Contact.extend(oldContact)
       } else {
-        this.contacts[contact.UserName] = this.Contact.extend(contact)
+        this.contacts.push(contact)
       }
     })
-    this.emit('contacts-updated', contacts)
   }
   updateSyncKey (data) {
     if (data.SyncKey) {

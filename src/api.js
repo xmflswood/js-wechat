@@ -10,6 +10,7 @@ const api = {
   webwxbatchgetcontact: `${origin}/cgi-bin/mmwebwx-bin/webwxbatchgetcontact`,
   send_text: `${origin}/cgi-bin/mmwebwx-bin/webwxsendmsg`,
   synccheck: `${origin}/cgi-bin/mmwebwx-bin/synccheck`,
-  sync: `${origin}/cgi-bin/mmwebwx-bin/webwxsync`
+  sync: `${origin}/cgi-bin/mmwebwx-bin/webwxsync`,
+  notify: `${origin}/cgi-bin/mmwebwx-bin/webwxstatusnotify`
 }
 module.exports = api
