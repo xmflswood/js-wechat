@@ -158,11 +158,7 @@ class Wx {
       'ToUserName': this.user['UserName'],
       'ClientMsgId': getClientMsgId()
     }
-    return this.$http.post(`${api.notify}?pass_ticket=${this.prop.pass_ticket}`, params).then(
-      (res) => {
-        console.log(res.data)
-      }
-    )
+    return this.$http.post(`${api.notify}?pass_ticket=${this.prop.pass_ticket}`, params)
   }
   batchGetContact (contacts) {
     let params = {
@@ -180,20 +176,6 @@ class Wx {
     let code = +await this.syncCheck()
     if (code !== 0) {
       let newData = await this.sync()
-      newData.AddMsgList.forEach(msg => {
-        msg = this.Message.extend(msg)
-        if (msg.MsgType === 51) {
-          let userList = msg.StatusNotifyUserName.split(',').filter(UserName => !this.contacts[UserName])
-            .map(UserName => {
-              return {
-                UserName: UserName
-              }
-            })
-          console.log('!!!!!!!!!!!')
-          console.log(userList.length)
-          console.log('!!!!!!!!!!!')
-        }
-      })
       this.handleSync(newData)
     }
     this.lastSyncTime = Date.now()

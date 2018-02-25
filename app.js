@@ -10,6 +10,7 @@ async function init () {
   console.log('初始化成功')
   await bot._getContact()
   await bot.notifyMobile()
+  console.log('notify success')
   return true
 }
 async function main () {
