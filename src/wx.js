@@ -27,7 +27,7 @@ class Wx {
       BaseRequest: {}
     }
     this.Message = MessageFactory(this)
-    this.contacts = []
+    this.contacts = {}
     this.Cookie = {}
     this._setAxios()
     this.$http = axios
@@ -146,7 +146,8 @@ class Wx {
     }
     return this.$http.post(api.get_contact, params).then(
       (res) => {
-        this.contacts = res.data.MemberList || []
+        this.updateContacts(res.data.MemberList || [])
+        // this.contacts = res.data.MemberList || []
       }
     )
   }
@@ -229,8 +230,8 @@ class Wx {
   }
   handleMsg (data) {
     data.forEach(async msg => {
-      if (this.contacts[msg.FromUserName] ||
-      msg.FromUserName.startsWith('@@')) {
+      if (!this.contacts[msg.FromUserName] ||
+      (msg.FromUserName.startsWith('@@') && this.contacts[msg.FromUserName].MemberCount === 0)) {
         let contacts = await this.batchGetContact([{UserName: msg.FromUserName}])
         this.updateContacts(contacts)
       }
@@ -255,9 +256,8 @@ class Wx {
       return
     }
     contacts.forEach(contact => {
-      if (this.contacts[contact.UserName]) {
-      } else {
-        this.contacts.push(contact)
+      if (!this.contacts[contact.UserName]) {
+        this.contacts[contact.UserName] = contact
       }
     })
   }
