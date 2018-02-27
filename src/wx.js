@@ -279,6 +279,35 @@ class Wx {
       this.prop.formatedSyncKey = synckeylist.join('|')
     }
   }
+  // 常用
+  sendText (msg, to) {
+    let clientMsgId = getClientMsgId()
+    let params = {
+      'BaseRequest': this.BaseRequest,
+      'Scene': 0,
+      'Msg': {
+        'Type': 1,
+        'Content': msg,
+        'FromUserName': this.user['UserName'],
+        'ToUserName': to,
+        'LocalID': clientMsgId,
+        'ClientMsgId': clientMsgId
+      }
+    }
+    this.$http.post(`${api.send_text}?pass_ticket=${this.prop.pass_ticket}&lang=zh_CN`, params).then(
+      (res) => {
+        console.log('发送消息成功')
+      }
+    )
+  }
+  findName (name) {
+    let list = Object.values(this.contacts)
+    for (let i = 0; i < list.length; i++) {
+      if (list[i].NickName === name || list[i].RemarkName === name) {
+        return list[i].UserName
+      }
+    }
+  }
 }
 
 function getClientMsgId () {
